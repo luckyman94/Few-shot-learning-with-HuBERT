@@ -1,0 +1,24 @@
+name: speech_commands
+hf_dataset: google/speech_commands
+hf_config: v0.02
+
+audio:
+  sample_rate: 16000
+  max_duration: 1.0
+
+labels:
+  type: keyword
+  classes:
+    - yes
+    - no
+    - up
+    - down
+    - left
+    - right
+    - on
+    - off
+    - stop
+    - go
+
+splits:
+  split: train
