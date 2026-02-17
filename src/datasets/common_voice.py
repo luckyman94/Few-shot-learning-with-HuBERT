@@ -1,69 +1,72 @@
 import torch
 import torchaudio
 from torch.utils.data import Dataset
-from pathlib import Path
+from datasets import load_dataset
 
 
-class CommonVoiceDataset(Dataset):
+class CommonVoiceHFDataset(Dataset):
     def __init__(
         self,
-        root_dir,
-        tsv="train.tsv",
+        language="pt",
+        split="train",
+        max_samples=2000,
         sample_rate=16000,
         max_len=32000,
-        max_samples=None,
         debug=False,
     ):
-        
-        print(f"Loading Common Voice from {root_dir} ({tsv})")
+        print(f"Loading Common Voice 22.0 (HF) [{language}]")
 
         self.sample_rate = sample_rate
         self.max_len = max_len
         self.debug = debug
+        self.data = []
 
-        self.dataset = torchaudio.datasets.COMMONVOICE(
-            root=Path(root_dir),
-            tsv=tsv,
+        dataset = load_dataset(
+            "fsicoli/common_voice_22_0",
+            language,
+            split=split,
+            trust_remote_code=True,
         )
 
-        self.data = []
-        self.speaker_to_idx = {}
-
+        speaker_to_idx = {}
         next_label = 0
 
-        for i in range(len(self.dataset)):
-            if max_samples is not None and i >= max_samples:
+        for i, ex in enumerate(dataset):
+            if i >= max_samples:
                 break
 
-            waveform, sr, meta = self.dataset[i]
+            audio = ex["audio"]["array"]
+            sr = ex["audio"]["sampling_rate"]
 
-            speaker_id = meta.get("client_id")
+            speaker_id = ex.get("client_id") or ex.get("speaker_id")
             if speaker_id is None:
                 continue
 
-            if speaker_id not in self.speaker_to_idx:
-                self.speaker_to_idx[speaker_id] = next_label
+            if speaker_id not in speaker_to_idx:
+                speaker_to_idx[speaker_id] = next_label
                 next_label += 1
 
-            label = self.speaker_to_idx[speaker_id]
-            self.data.append((i, label))
+            label = speaker_to_idx[speaker_id]
+            self.data.append((audio, sr, label))
 
         self.classes = list(range(next_label))
+        self.class_to_idx = speaker_to_idx
 
         if self.debug:
             print(f"[DEBUG] Loaded {len(self.data)} samples")
-            print(f"[DEBUG] Number of speakers: {len(self.classes)}")
+            print(f"[DEBUG] Speakers: {len(self.classes)}")
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        original_idx, label = self.data[idx]
+        audio, sr, label = self.data[idx]
 
-        waveform, sr, _ = self.dataset[original_idx]
+        waveform = torch.tensor(audio)
         sr = int(sr)
 
-        waveform = waveform.mean(dim=0)
+        if waveform.ndim > 1:
+            waveform = waveform.mean(dim=0)
 
         if sr != self.sample_rate:
             waveform = torchaudio.functional.resample(
@@ -80,8 +83,6 @@ class CommonVoiceDataset(Dataset):
         waveform = (waveform - waveform.mean()) / (waveform.std() + 1e-9)
 
         if self.debug and idx < 3:
-            print(
-                f"[DEBUG] idx={idx} | shape={waveform.shape} | label={label}"
-            )
+            print(f"[DEBUG] idx={idx} | shape={waveform.shape} | label={label}")
 
         return waveform, label
