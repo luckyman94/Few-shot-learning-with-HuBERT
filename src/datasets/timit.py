@@ -3,33 +3,24 @@ import torch
 import torchaudio
 from torch.utils.data import Dataset
 import kagglehub
+import random
 
 
 class TimitDataset(Dataset):
     def __init__(
         self,
-        root_dir="",
+        root_dir="TRAIN",
         sample_rate=16000,
         max_len=16000,
         max_files=None,
+        n_speakers=10,
+        seed=42,
     ):
         """
-        DARPA TIMIT dataset (Kaggle)
+        DARPA TIMIT dataset (few-shot speaker classification)
 
-        Folder structure (typical):
-        TIMIT/
-          ├── TRAIN/
-          │   ├── DR1/
-          │   │   ├── MABC0/
-          │   │   │   ├── SA1.wav
-          │   │   │   ├── SX1.wav
-          │   │   │   └── ...
-          ├── TEST/
-          │   └── ...
-
-        Here:
         - class = speaker ID
-        - task = few-shot speaker classification
+        - reduced to n_speakers speakers
         """
 
         base_path = kagglehub.dataset_download(
@@ -42,21 +33,31 @@ class TimitDataset(Dataset):
         self.data = []
 
         # ─────────────────────────────────────────────
-        # Collect speakers
+        # Collect all speakers
         # ─────────────────────────────────────────────
-        speakers = set()
+        all_speakers = set()
 
         for root, _, files in os.walk(self.root_dir):
             for file in files:
                 if file.endswith(".wav"):
                     speaker_id = os.path.basename(root)
-                    speakers.add(speaker_id)
+                    all_speakers.add(speaker_id)
 
-        self.classes = sorted(list(speakers))
+        all_speakers = sorted(list(all_speakers))
+
+        print(f"[INFO] Total speakers in TIMIT: {len(all_speakers)}")
+
+        # ─────────────────────────────────────────────
+        # Select subset of speakers
+        # ─────────────────────────────────────────────
+        random.seed(seed)
+        selected_speakers = random.sample(all_speakers, n_speakers)
+
+        self.classes = sorted(selected_speakers)
         self.class_to_idx = {cls: i for i, cls in enumerate(self.classes)}
 
         # ─────────────────────────────────────────────
-        # Collect audio files
+        # Collect audio files for selected speakers
         # ─────────────────────────────────────────────
         for root, _, files in os.walk(self.root_dir):
             speaker_id = os.path.basename(root)
@@ -78,7 +79,7 @@ class TimitDataset(Dataset):
                 break
 
         print(
-            f"[INFO] TIMIT Dataset: "
+            f"[INFO] TIMIT subset: "
             f"{len(self.data)} files | "
             f"{len(self.classes)} speakers"
         )

@@ -1,0 +1,69 @@
+name: timit
+full_name: DARPA TIMIT Acoustic-Phonetic Continuous Speech Corpus
+
+task: speaker_classification
+setting: few_shot
+
+source:
+  provider: kaggle
+  kaggle_id: mfekadu/darpa-timit-acousticphonetic-continuous-speech
+  original_organization: DARPA / NIST
+
+modality: audio
+language: en
+domain: read_speech
+
+description: >
+  The DARPA TIMIT Acoustic-Phonetic Continuous Speech Corpus is a
+  benchmark dataset designed for the development and evaluation of
+  automatic speech recognition systems. It contains 6300 utterances
+  spoken by 630 speakers from 8 major dialect regions of the United States.
+  In this work, TIMIT is used as a few-shot speaker classification dataset.
+
+classes:
+  type: speakers
+  count: 630
+  unit: speaker_id
+
+samples:
+  total_utterances: 6300
+  utterances_per_class: 10
+
+splits:
+  train: TRAIN
+  test: TEST
+
+preprocessing:
+  sample_rate: 16000
+  mono: true
+  max_duration_seconds: 1.0
+  normalization: mean_std
+  padding: zero_pad
+  truncation: true
+
+few_shot_protocol:
+  n_way: variable
+  k_shot: variable
+  query_per_class: variable
+  sampling: uniform_per_class
+
+subset:
+  used: true
+  max_files: configurable
+  reason: >
+    The full dataset is large for rapid experimentation.
+    Subsampling is used to control memory usage and speed up benchmarking.
+
+labels:
+  format: integer
+  mapping: class_to_index
+
+license:
+  type: LDC / academic
+  usage: research_only
+
+notes: >
+  Speaker identity is inferred from the directory structure.
+  Phonetic annotations are not used in this setup.
+  The dataset is well suited for few-shot speaker recognition
+  and representation learning evaluation.
