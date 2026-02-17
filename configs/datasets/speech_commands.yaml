@@ -1,24 +1,62 @@
-name: speech_commands
-hf_dataset: google/speech_commands
-hf_config: v0.02
+dataset:
+  name: speech_commands
+  source:
+    original_dataset: Google Speech Commands v0.02
+    kaggle: nikhilkushwaha2529/speech-commands
+    type: real_audio
+  description: >
+    Balanced subset of the Google Speech Commands dataset.
+    The original dataset contains approximately 16,600 audio files
+    of spoken commands. For experimental efficiency and fair evaluation,
+    we construct a reduced and class-balanced subset.
 
-audio:
-  sample_rate: 16000
-  max_duration: 1.0
+  task:
+    type: audio_classification
+    setting: few_shot_learning
+    input: raw_audio
+    output: command_label
 
-labels:
-  type: keyword
+  audio:
+    format: wav
+    sample_rate: 16000
+    channels: mono
+    duration: fixed
+    max_length_samples: 16000
+    normalization: mean_std
+
   classes:
-    - yes
-    - no
-    - up
-    - down
-    - left
-    - right
-    - on
-    - off
-    - stop
-    - go
+    names:
+      - down
+      - left
+      - off
+      - on
+      - right
+      - stop
+      - up
+    num_classes: 7
 
-splits:
-  split: train
+  split:
+    construction: balanced_sampling
+    total_samples: 1000
+    samples_per_class: 142
+    strategy: random_sampling_per_class
+    seed: 42
+
+  preprocessing:
+    - resample_to_16kHz
+    - convert_to_mono
+    - pad_or_truncate
+    - waveform_normalization
+
+  usage:
+    benchmark:
+      few_shot:
+        n_way: 5
+        k_shot: [1, 5]
+        n_query: 10
+        episodic: true
+
+  notes:
+    - Original dataset is highly unbalanced in size per class.
+    - Subsampling ensures equal class representation.
+    - Dataset is suitable for few-shot prototypical networks.
