@@ -1,0 +1,30 @@
+dataset:
+  name: DogsCatsBirdsAudio
+  task: audio_classification
+  modality: audio
+  description: >
+    Small audio dataset composed of animal sounds (dogs, cats, birds),
+    extracted from a public single-word speech recognition dataset.
+    The dataset is used for multi-class audio classification experiments.
+
+  classes:
+    - name: birds
+      num_samples: 193
+    - name: cats
+      num_samples: 207
+    - name: dogs
+      num_samples: 210
+
+  num_classes: 3
+  total_samples: 610
+
+  source:
+    url: "http://download.tensorflow.org/data/speech_commands_v0.01.tar.gz"
+    original_dataset: Speech Commands Dataset v0.01
+
+  year: 2017
+  license: CC BY 4.0
+
+  citation: |
+    Pete Warden. "Speech Commands: A Dataset for Limited-Vocabulary Speech Recognition".
+    arXiv:1804.03209, 2018.
