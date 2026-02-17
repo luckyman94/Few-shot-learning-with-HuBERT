@@ -4,7 +4,12 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
 
-def plot_confusion_matrix(y_true, y_pred, class_names=None):
+def plot_confusion_matrix(
+    y_true,
+    y_pred,
+    class_names=None,
+    title="Normalized confusion matrix",
+):
     cm = confusion_matrix(y_true, y_pred)
     cm = cm.astype(float) / cm.sum(axis=1, keepdims=True)
 
@@ -19,6 +24,6 @@ def plot_confusion_matrix(y_true, y_pred, class_names=None):
     )
     plt.xlabel("Predicted")
     plt.ylabel("True")
-    plt.title("Normalized confusion matrix")
+    plt.title(title)
     plt.tight_layout()
     plt.show()
