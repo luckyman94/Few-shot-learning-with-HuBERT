@@ -60,6 +60,7 @@ class CremaDDataset(Dataset):
         path, label = self.data[idx]
 
         waveform, sr = torchaudio.load(path)
+        sr = int(sr)
         waveform = waveform.mean(dim=0)  # mono
 
         if sr != self.sample_rate:
