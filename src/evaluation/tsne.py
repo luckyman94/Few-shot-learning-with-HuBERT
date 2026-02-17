@@ -12,10 +12,7 @@ def plot_tsne(
     title="t-SNE projection",
     figsize=(6, 6),
 ):
-    """
-    embeddings: (N, D)
-    labels: (N,)
-    """
+    
 
     tsne = TSNE(
         n_components=2,

@@ -1,0 +1,65 @@
+dataset:
+  name: SnoringAudioDataset
+  title: Snoring Dataset
+  task: audio_classification
+  modality: audio
+  description: >
+    Audio dataset for snoring detection, composed of short audio clips
+    labeled as snoring or non-snoring. The dataset is designed for
+    binary audio classification tasks in healthcare-related contexts.
+
+  creators:
+    - name: Tareq Khan
+      email: tareq.khan@emich.edu
+
+  classes:
+    - name: non_snoring
+      label: 0
+      num_samples: 500
+      description: >
+        Non-snoring background sounds that may occur near a snorer,
+        including baby crying, clock ticking, door opening and closing,
+        silence, vibration motor noise, toilet flushing, emergency siren,
+        rain and thunderstorm, streetcar sounds, people talking, and
+        background television news.
+    - name: snoring
+      label: 1
+      num_samples: 500
+      description: >
+        Snoring sounds from children, adult men, and adult women.
+        Includes both clean snoring sounds and snoring mixed with
+        background non-snoring noises.
+
+  num_classes: 2
+  total_samples: 1000
+  clip_duration_seconds: 1.0
+
+  dataset_structure:
+    - folder: "0"
+      label: non_snoring
+    - folder: "1"
+      label: snoring
+
+  source:
+    type: web_audio_collection
+    urls:
+      - "https://www.soundsnap.com/tags/snoring"
+      - "https://www.zapsplat.com/sound-effect-category/breathing-and-snoring"
+      - "https://www.fesliyanstudios.com/royalty-free-sound-effects-download/people-snoring-189"
+      - "https://www.youtube.com/watch?v=1deTKPX1j8c"
+      - "https://www.youtube.com/watch?v=SOxwffK0xUc"
+    accessed_on: "2019-08-06"
+
+  year: 2019
+
+  license: unknown
+
+  intended_use:
+    - snoring_detection
+    - audio_event_classification
+    - healthcare_signal_processing
+
+  citation: |
+    Khan, T. (2019). Snoring Dataset.
+    Audio samples collected from multiple online sources for
+    snoring detection research.
