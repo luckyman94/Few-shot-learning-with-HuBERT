@@ -12,7 +12,6 @@ class UrbanDataset(Dataset):
         self.sample_rate = sample_rate
         self.max_len = max_len
         self.data = []
-        self.cache = {}
 
         self.classes = sorted([
             d for d in os.listdir(self.root_dir)
