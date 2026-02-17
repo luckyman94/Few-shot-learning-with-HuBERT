@@ -1,0 +1,66 @@
+dataset:
+  name: synthetic_audio_harmonics
+  source:
+    type: synthetic
+    generation: procedural_signal_generation
+
+  description: >
+    Synthetic audio dataset designed to study the effect of harmonic richness
+    on few-shot audio classification. Each class corresponds to a distinct
+    fundamental frequency. The spectral complexity of the signals is controlled
+    by varying the maximum number of harmonics added to the base sine wave.
+    All other factors are kept fixed to isolate the influence of harmonics.
+
+  task:
+    type: audio_classification
+    setting: few_shot_learning
+    input: raw_audio
+    output: class_label
+
+  audio:
+    format: synthetic_waveform
+    sample_rate: 16000
+    channels: mono
+    duration: fixed
+    max_length_samples: 16000
+    normalization: mean_std
+
+  classes:
+    num_classes: 8
+    definition: fundamental_frequency_based
+
+  data_generation:
+    total_samples: 800
+    samples_per_class: 100
+    base_frequency_range_hz: [150, 500]
+    harmonic_control:
+      parameter: max_harmonics
+      values:
+        low: 2
+        medium: 5
+        high: 10
+      amplitude_decay: 1_over_harmonic_index
+
+  split:
+    construction: balanced_sampling
+    strategy: uniform_per_class
+    seed: 42
+
+  preprocessing:
+    - waveform_generation
+    - harmonic_addition
+    - waveform_normalization
+
+  usage:
+    benchmark:
+      few_shot:
+        n_way: 5
+        k_shot: [1, 5]
+        n_query: 10
+        episodic: true
+
+  notes:
+    - No additive noise is applied in this dataset.
+    - Harmonic richness is the only varying factor across configurations.
+    - The dataset is intended for controlled analysis of spectral complexity
+      in few-shot learning with HuBERT.
