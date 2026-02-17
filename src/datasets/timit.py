@@ -1,9 +1,9 @@
 import os
+import random
 import torch
 import torchaudio
 from torch.utils.data import Dataset
 import kagglehub
-import random
 
 
 class TimitDataset(Dataset):
@@ -12,16 +12,17 @@ class TimitDataset(Dataset):
         root_dir="data/TRAIN",
         sample_rate=16000,
         max_len=16000,
-        max_files=None,
         n_speakers=10,
+        max_files=None,
         seed=42,
     ):
         """
-        DARPA TIMIT dataset (few-shot speaker classification)
+        TIMIT dataset (speaker classification)
 
-        - class = speaker ID
-        - reduced to n_speakers speakers
+        Class = speaker ID (e.g. FCJF0)
         """
+
+        random.seed(seed)
 
         base_path = kagglehub.dataset_download(
             "mfekadu/darpa-timit-acousticphonetic-continuous-speech"
@@ -33,53 +34,62 @@ class TimitDataset(Dataset):
         self.data = []
 
         # ─────────────────────────────────────────────
-        # Collect all speakers
+        # 1. Collect ALL speakers
         # ─────────────────────────────────────────────
-        all_speakers = set()
+        speakers = set()
 
-        for root, _, files in os.walk(self.root_dir):
-            for file in files:
-                if file.endswith(".wav"):
-                    speaker_id = os.path.basename(root)
-                    all_speakers.add(speaker_id)
-
-        all_speakers = sorted(list(all_speakers))
-
-        print(f"[INFO] Total speakers in TIMIT: {len(all_speakers)}")
-
-        # ─────────────────────────────────────────────
-        # Select subset of speakers
-        # ─────────────────────────────────────────────
-        random.seed(seed)
-        selected_speakers = random.sample(all_speakers, n_speakers)
-
-        self.classes = sorted(selected_speakers)
-        self.class_to_idx = {cls: i for i, cls in enumerate(self.classes)}
-
-        # ─────────────────────────────────────────────
-        # Collect audio files for selected speakers
-        # ─────────────────────────────────────────────
-        for root, _, files in os.walk(self.root_dir):
-            speaker_id = os.path.basename(root)
-            if speaker_id not in self.class_to_idx:
+        for dr in os.listdir(self.root_dir):
+            dr_path = os.path.join(self.root_dir, dr)
+            if not os.path.isdir(dr_path):
                 continue
 
-            label = self.class_to_idx[speaker_id]
+            for speaker in os.listdir(dr_path):
+                speaker_path = os.path.join(dr_path, speaker)
+                if os.path.isdir(speaker_path):
+                    speakers.add(speaker)
 
-            for file in files:
-                if not file.endswith(".wav"):
+        speakers = sorted(list(speakers))
+        print(f"[INFO] Total speakers in TIMIT: {len(speakers)}")
+
+        if n_speakers is not None:
+            speakers = random.sample(
+                speakers, min(n_speakers, len(speakers))
+            )
+
+        self.classes = speakers
+        self.class_to_idx = {s: i for i, s in enumerate(self.classes)}
+
+        # ─────────────────────────────────────────────
+        # 2. Collect audio files
+        # ─────────────────────────────────────────────
+        for dr in os.listdir(self.root_dir):
+            dr_path = os.path.join(self.root_dir, dr)
+            if not os.path.isdir(dr_path):
+                continue
+
+            for speaker in os.listdir(dr_path):
+                if speaker not in self.class_to_idx:
                     continue
 
-                self.data.append((os.path.join(root, file), label))
+                speaker_path = os.path.join(dr_path, speaker)
+                label = self.class_to_idx[speaker]
 
-                if max_files is not None and len(self.data) >= max_files:
-                    break
+                for file in os.listdir(speaker_path):
+                    if not file.lower().endswith(".wav"):
+                        continue
 
-            if max_files is not None and len(self.data) >= max_files:
+                    self.data.append(
+                        (os.path.join(speaker_path, file), label)
+                    )
+
+                    if max_files and len(self.data) >= max_files:
+                        break
+
+            if max_files and len(self.data) >= max_files:
                 break
 
         print(
-            f"[INFO] TIMIT subset: "
+            f"[INFO] TIMIT Dataset loaded: "
             f"{len(self.data)} files | "
             f"{len(self.classes)} speakers"
         )
