@@ -1,5 +1,8 @@
 import torch
 import random
+from collections import defaultdict
+import random
+
 
 def sample_task(
     X, y,
@@ -136,3 +139,4 @@ def sample_fewshot_task(
         torch.cat(X_query),
         torch.cat(y_query),
     )
+

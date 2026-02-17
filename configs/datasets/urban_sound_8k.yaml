@@ -1,0 +1,102 @@
+dataset:
+  name: UrbanSound8K
+  title: UrbanSound8K Dataset
+  task: audio_classification
+  modality: audio
+  description: >
+    UrbanSound8K is a dataset of short urban sound recordings,
+    containing 8732 labeled sound excerpts of up to 4 seconds.
+    The dataset covers 10 classes of common urban sounds drawn
+    from an urban sound taxonomy and is widely used for
+    environmental sound classification benchmarks.
+
+  classes:
+    - name: air_conditioner
+      class_id: 0
+    - name: car_horn
+      class_id: 1
+    - name: children_playing
+      class_id: 2
+    - name: dog_bark
+      class_id: 3
+    - name: drilling
+      class_id: 4
+    - name: engine_idling
+      class_id: 5
+    - name: gun_shot
+      class_id: 6
+    - name: jackhammer
+      class_id: 7
+    - name: siren
+      class_id: 8
+    - name: street_music
+      class_id: 9
+
+  num_classes: 10
+  total_samples: 8732
+  max_clip_duration_seconds: 4.0
+
+  dataset_structure:
+    folds:
+      type: predefined
+      num_folds: 10
+      folders:
+        - fold1
+        - fold2
+        - fold3
+        - fold4
+        - fold5
+        - fold6
+        - fold7
+        - fold8
+        - fold9
+        - fold10
+
+  audio:
+    format: wav
+    sampling_rate: variable
+    bit_depth: variable
+    channels: variable
+    source_platform: freesound.org
+
+  metadata:
+    file: UrbanSound8K.csv
+    fields:
+      slice_file_name:
+        description: >
+          Audio file name following the format
+          [fsID]-[classID]-[occurrenceID]-[sliceID].wav
+      fsID:
+        description: >
+          Freesound ID of the original recording
+      start:
+        description: Start time of the slice in the original recording
+      end:
+        description: End time of the slice in the original recording
+      salience:
+        description: >
+          Subjective salience of the sound
+          (1 = foreground, 2 = background)
+      fold:
+        description: Fold number (1–10) for cross-validation
+      classID:
+        description: Numeric identifier of the sound class
+      class:
+        description: Name of the sound class
+
+  source:
+    platform: freesound.org
+    description: >
+      All audio excerpts are taken from field recordings
+      uploaded to Freesound by its community.
+
+  intended_use:
+    - environmental_sound_classification
+    - audio_event_detection
+    - urban_sound_analysis
+    - benchmarking_audio_models
+
+  citation: |
+    Salamon, J., Jacoby, C., & Bello, J. P. (2014).
+    A Dataset and Taxonomy for Urban Sound Research.
+    Proceedings of the 22nd ACM International Conference on Multimedia.
