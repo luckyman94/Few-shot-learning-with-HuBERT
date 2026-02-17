@@ -6,14 +6,7 @@ import kagglehub
 
 
 class CremaDDataset(Dataset):
-    def __init__(self, sample_rate=16000, max_len=24000):
-        """
-        CREMA-D emotion classification dataset
-
-        Returns:
-            waveform: Tensor [T]
-            label: int
-        """
+    def __init__(self, root_dir="", sample_rate=16000, max_len=24000):
         base_path = kagglehub.dataset_download("ejlok1/cremad")
         self.root_dir = os.path.join(base_path, "AudioWAV")
 
@@ -21,7 +14,6 @@ class CremaDDataset(Dataset):
         self.max_len = max_len
         self.data = []
 
-        # Emotion mapping (official CREMA-D)
         self.emotion_map = {
             "ANG": "angry",
             "DIS": "disgust",
@@ -46,12 +38,8 @@ class CremaDDataset(Dataset):
             if emotion_code not in self.emotion_map:
                 continue
 
-            emotion = self.emotion_map[emotion_code]
-            label = self.class_to_idx[emotion]
-
-            self.data.append(
-                (os.path.join(self.root_dir, file), label)
-            )
+            label = self.class_to_idx[self.emotion_map[emotion_code]]
+            self.data.append((os.path.join(self.root_dir, file), label))
 
     def __len__(self):
         return len(self.data)
@@ -60,8 +48,8 @@ class CremaDDataset(Dataset):
         path, label = self.data[idx]
 
         waveform, sr = torchaudio.load(path)
-        sr = int(sr)
-        waveform = waveform.mean(dim=0)  # mono
+        sr = int(sr)                       # ✅ FIX CRUCIAL
+        waveform = waveform.mean(dim=0)
 
         if sr != self.sample_rate:
             waveform = torchaudio.functional.resample(
