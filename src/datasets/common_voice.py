@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from datasets import load_dataset
 
 
-class CommonVoiceHFDataset(Dataset):
+class CommonVoiceDataset(Dataset):
     def __init__(
         self,
         language="pt",
