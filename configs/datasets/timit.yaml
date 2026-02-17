@@ -1,69 +1,59 @@
-name: timit
-full_name: DARPA TIMIT Acoustic-Phonetic Continuous Speech Corpus
+dataset:
+  name: timit
+  source:
+    original_dataset: DARPA TIMIT Acoustic-Phonetic Continuous Speech Corpus
+    kaggle: mfekadu/darpa-timit-acousticphonetic-continuous-speech
+    type: real_audio
+  description: >
+    Reduced subset of the DARPA TIMIT dataset for few-shot speaker identification.
+    The original corpus contains recordings from 630 speakers across 8 US dialect
+    regions, with a total of 6,300 utterances.
+    For computational efficiency and fair comparison with other datasets,
+    we construct a reduced speaker-balanced subset.
 
-task: speaker_classification
-setting: few_shot
+  task:
+    type: speaker_identification
+    setting: few_shot_learning
+    input: raw_audio
+    output: speaker_id
 
-source:
-  provider: kaggle
-  kaggle_id: mfekadu/darpa-timit-acousticphonetic-continuous-speech
-  original_organization: DARPA / NIST
+  audio:
+    format: wav
+    sample_rate: 16000
+    channels: mono
+    duration: fixed
+    max_length_samples: 16000
+    normalization: mean_std
 
-modality: audio
-language: en
-domain: read_speech
+  classes:
+    definition: speaker_id
+    num_classes: 10
+    selection: random_speakers
+    source_split: TRAIN
 
-description: >
-  The DARPA TIMIT Acoustic-Phonetic Continuous Speech Corpus is a
-  benchmark dataset designed for the development and evaluation of
-  automatic speech recognition systems. It contains 6300 utterances
-  spoken by 630 speakers from 8 major dialect regions of the United States.
-  In this work, TIMIT is used as a few-shot speaker classification dataset.
+  split:
+    construction: balanced_sampling
+    total_samples: 1000
+    samples_per_class: ~100
+    strategy: random_sampling_per_speaker
+    seed: 42
 
-classes:
-  type: speakers
-  count: 630
-  unit: speaker_id
+  preprocessing:
+    - resample_to_16kHz
+    - convert_to_mono
+    - pad_or_truncate
+    - waveform_normalization
 
-samples:
-  total_utterances: 6300
-  utterances_per_class: 10
+  usage:
+    benchmark:
+      few_shot:
+        n_way: 5
+        k_shot: [1, 5]
+        n_query: 10
+        episodic: true
 
-splits:
-  train: TRAIN
-  test: TEST
-
-preprocessing:
-  sample_rate: 16000
-  mono: true
-  max_duration_seconds: 1.0
-  normalization: mean_std
-  padding: zero_pad
-  truncation: true
-
-few_shot_protocol:
-  n_way: variable
-  k_shot: variable
-  query_per_class: variable
-  sampling: uniform_per_class
-
-subset:
-  used: true
-  max_files: configurable
-  reason: >
-    The full dataset is large for rapid experimentation.
-    Subsampling is used to control memory usage and speed up benchmarking.
-
-labels:
-  format: integer
-  mapping: class_to_index
-
-license:
-  type: LDC / academic
-  usage: research_only
-
-notes: >
-  Speaker identity is inferred from the directory structure.
-  Phonetic annotations are not used in this setup.
-  The dataset is well suited for few-shot speaker recognition
-  and representation learning evaluation.
+  notes:
+    - Only the TRAIN split is used to avoid speaker leakage.
+    - Speaker identity is treated as a categorical class.
+    - Dialect region labels are not used explicitly.
+    - Subsampling ensures comparable scale with other few-shot benchmarks.

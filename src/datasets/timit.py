@@ -16,11 +16,6 @@ class TimitDataset(Dataset):
         max_files=None,
         seed=42,
     ):
-        """
-        TIMIT dataset (speaker classification)
-
-        Class = speaker ID (e.g. FCJF0)
-        """
 
         random.seed(seed)
 
@@ -33,9 +28,6 @@ class TimitDataset(Dataset):
         self.max_len = max_len
         self.data = []
 
-        # ─────────────────────────────────────────────
-        # 1. Collect ALL speakers
-        # ─────────────────────────────────────────────
         speakers = set()
 
         for dr in os.listdir(self.root_dir):
@@ -59,9 +51,7 @@ class TimitDataset(Dataset):
         self.classes = speakers
         self.class_to_idx = {s: i for i, s in enumerate(self.classes)}
 
-        # ─────────────────────────────────────────────
-        # 2. Collect audio files
-        # ─────────────────────────────────────────────
+        
         for dr in os.listdir(self.root_dir):
             dr_path = os.path.join(self.root_dir, dr)
             if not os.path.isdir(dr_path):
