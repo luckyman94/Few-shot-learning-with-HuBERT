@@ -1,0 +1,34 @@
+dataset:
+  name: synthetic_audio_noise
+  type: synthetic
+
+  description: >
+    Synthetic audio dataset composed of pure sinusoidal signals with
+    class-specific base frequencies. The dataset is designed to study
+    the impact of additive noise on few-shot learning.
+    The signal-to-noise ratio (SNR) can be explicitly controlled,
+    allowing the generation of low-noise or highly noisy datasets.
+
+  task:
+    type: audio_classification
+    setting: few_shot_learning
+
+  audio:
+    sample_rate: 16000
+    channels: mono
+    duration: fixed
+    max_length_samples: 16000
+
+  data:
+    num_classes: 8
+    total_samples: 800
+    samples_per_class: 100
+    class_definition: base_frequency_shift
+
+  noise:
+    type: gaussian
+    control_parameter: snr_db
+    note: SNR can be adjusted to generate datasets with different noise levels
+
+  usage:
+    focus: noise_robustness

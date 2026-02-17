@@ -10,21 +10,9 @@ class SyntheticAudioNoiseDataset(Dataset):
         n_samples=200,
         sample_rate=16000,
         max_len=16000,
-        snr_db=20,      # ← UNIQUE facteur contrôlé
+        snr_db=20,      
         seed=42,
-    ):
-        """
-        Synthetic audio dataset with controlled noise only.
-
-        - Fixed pure sine signals
-        - Classes differ ONLY by frequency
-        - Noise level controlled via SNR (dB)
-
-        Returns:
-            waveform: Tensor [T]
-            label: int
-        """
-
+    ):  
         assert n_samples % n_classes == 0, "n_samples must be divisible by n_classes"
 
         rng = np.random.RandomState(seed)
@@ -43,18 +31,11 @@ class SyntheticAudioNoiseDataset(Dataset):
         t = np.linspace(0, duration, max_len, endpoint=False)
 
         for class_id in range(n_classes):
-            # Class-specific frequency (fixed across datasets)
             base_freq = 200 + class_id * 40
 
             for _ in range(samples_per_class):
-                # ─────────────
-                # Pure signal
-                # ─────────────
                 signal = np.sin(2 * np.pi * base_freq * t)
 
-                # ─────────────
-                # Additive white Gaussian noise (controlled SNR)
-                # ─────────────
                 noise = rng.randn(len(signal))
                 signal_power = np.mean(signal ** 2)
                 noise_power = signal_power / (10 ** (snr_db / 10))
@@ -78,7 +59,6 @@ class SyntheticAudioNoiseDataset(Dataset):
 
         waveform = torch.tensor(audio)
 
-        # Standard normalization (kept constant across datasets)
         waveform = (waveform - waveform.mean()) / (waveform.std() + 1e-9)
 
         return waveform, label
