@@ -1,4 +1,5 @@
 import os
+import random
 import torch
 import torchaudio
 from torch.utils.data import Dataset
@@ -11,25 +12,16 @@ class SpeechCommandsDataset(Dataset):
         root_dir="speech_commands",
         sample_rate=16000,
         max_len=16000,
-        max_files=1000,
+        total_samples=1000,   
+        seed=42,
     ):
         """
-        Speech Commands dataset loaded from Kaggle.
+        Balanced Speech Commands dataset (from Kaggle).
 
-        Folder structure:
-        speech_commands/
-          ├── down/
-          ├── left/
-          ├── off/
-          ├── on/
-          ├── right/
-          ├── stop/
-          ├── up/
-
-        Returns:
-            waveform: Tensor [T]
-            label: int
+        total_samples is split evenly across classes.
         """
+
+        random.seed(seed)
 
         base_path = kagglehub.dataset_download(
             "nikhilkushwaha2529/speech-commands"
@@ -40,35 +32,45 @@ class SpeechCommandsDataset(Dataset):
         self.max_len = max_len
         self.data = []
 
-        # Classes = folder names
+        # Detect classes
         self.classes = sorted([
             d for d in os.listdir(self.root_dir)
             if os.path.isdir(os.path.join(self.root_dir, d))
         ])
         self.class_to_idx = {cls: i for i, cls in enumerate(self.classes)}
 
-        # Collect files (limit to max_files total)
+        n_classes = len(self.classes)
+        samples_per_class = total_samples // n_classes
+
+        print(
+            f"[INFO] Building balanced dataset: "
+            f"{samples_per_class} samples × {n_classes} classes "
+            f"= {samples_per_class * n_classes}"
+        )
+
+        # Collect per class
         for cls in self.classes:
             cls_path = os.path.join(self.root_dir, cls)
             label = self.class_to_idx[cls]
 
-            for file in os.listdir(cls_path):
-                if not file.endswith(".wav"):
-                    continue
+            files = [
+                f for f in os.listdir(cls_path)
+                if f.endswith(".wav")
+            ]
 
-                if len(self.data) >= max_files:
-                    break
+            random.shuffle(files)
+            files = files[:samples_per_class]
 
+            for file in files:
                 self.data.append(
                     (os.path.join(cls_path, file), label)
                 )
 
-            if len(self.data) >= max_files:
-                break
+        random.shuffle(self.data)
 
         print(
-            f"[INFO] Speech Commands (Kaggle): "
-            f"{len(self.data)} files, {len(self.classes)} classes"
+            f"[INFO] Final dataset: {len(self.data)} samples "
+            f"({samples_per_class} per class)"
         )
 
     def __len__(self):
