@@ -10,11 +10,6 @@ class CremaDDataset(Dataset):
         base_path = kagglehub.dataset_download("ejlok1/cremad")
         self.root_dir = os.path.join(base_path, "AudioWAV")
 
-        print(f"[DEBUG] Root dir: {self.root_dir}")
-        print(f"[DEBUG] Found {len(self.data)} audio files")
-        print(f"[DEBUG] Classes: {self.classes}")
-
-
         self.sample_rate = sample_rate
         self.max_len = max_len
         self.data = []
