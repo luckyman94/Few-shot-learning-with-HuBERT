@@ -1,46 +1,110 @@
+import torch
+import torchaudio
+from torch.utils.data import Dataset
 from datasets import load_dataset
-import librosa
-from collections import defaultdict
-import os
 
 
-def load_common_voice(cfg):
-    token = os.environ.get("HF_TOKEN")
-    dataset = load_dataset(
-        cfg["hf_dataset"],
-        cfg["language"],
-        split=cfg["splits"]["split"],
-        token=token, 
-    )
+class CommonVoiceDataset(Dataset):
+    def __init__(
+        self,
+        language="en",
+        split="train",
+        max_samples=2000,
+        sample_rate=16000,
+        max_len=32000,
+        debug=False,
+    ):
+        """
+        Common Voice speaker identification dataset 
 
-    sr_target = cfg["audio"]["sample_rate"]
-    max_len = int(cfg["audio"]["max_duration"] * sr_target)
-    min_utts = cfg["labels"]["min_utterances_per_class"]
-    max_speakers = cfg["labels"]["max_speakers"]
+        label = speaker_id 
 
-    speaker_dict = defaultdict(list)
+        Parameters
+        ----------
+        language : str
+            Language code (e.g. "en", "fr")
+        split : str
+            Dataset split ("train", "validation", "test")
+        max_samples : int
+            Max number of utterances loaded (for speed)
+        sample_rate : int
+            Target sampling rate
+        max_len : int
+            Fixed waveform length (padding / truncation)
+        debug : bool
+            Print debug info
+        """
+        print(f"Loading Common Voice ({language}, split={split})")
 
-    for ex in dataset:
-        speaker = ex["client_id"]
-        audio = ex["audio"]["array"]
-        sr = ex["audio"]["sampling_rate"]
+        self.sample_rate = sample_rate
+        self.max_len = max_len
+        self.debug = debug
+        self.data = []
 
-        if sr != sr_target:
-            audio = librosa.resample(audio, orig_sr=sr, target_sr=sr_target)
+        dataset = load_dataset(
+            "mozilla-foundation/common_voice_16_1",
+            language,
+            split=split,
+        )
 
-        audio = audio[:max_len]
+        speaker_to_idx = {}
+        next_label = 0
 
-        if len(audio) < int(0.2 * sr_target):
-            continue
+        for i, example in enumerate(dataset):
+            if i >= max_samples:
+                break
 
-        speaker_dict[speaker].append(audio)
+            speaker_id = example["client_id"]
+            if speaker_id is None:
+                continue
 
-    speaker_dict = {
-        spk: utts
-        for spk, utts in speaker_dict.items()
-        if len(utts) >= min_utts
-    }
+            if speaker_id not in speaker_to_idx:
+                speaker_to_idx[speaker_id] = next_label
+                next_label += 1
 
-    speakers = list(speaker_dict.keys())[:max_speakers]
+            label = speaker_to_idx[speaker_id]
 
-    return {spk: speaker_dict[spk] for spk in speakers}
+            audio = example["audio"]["array"]
+            sr = example["audio"]["sampling_rate"]
+
+            self.data.append((audio, sr, label))
+
+        self.classes = list(range(next_label))
+        self.class_to_idx = speaker_to_idx
+
+        if self.debug:
+            print(f"[DEBUG] Loaded {len(self.data)} samples")
+            print(f"[DEBUG] Number of speakers: {len(self.classes)}")
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        audio, sr, label = self.data[idx]
+
+        waveform = torch.tensor(audio)
+        sr = int(sr)
+
+        if waveform.ndim > 1:
+            waveform = waveform.mean(dim=0)
+
+        if sr != self.sample_rate:
+            waveform = torchaudio.functional.resample(
+                waveform, sr, self.sample_rate
+            )
+
+        if waveform.shape[0] < self.max_len:
+            waveform = torch.nn.functional.pad(
+                waveform, (0, self.max_len - waveform.shape[0])
+            )
+        else:
+            waveform = waveform[:self.max_len]
+
+        waveform = (waveform - waveform.mean()) / (waveform.std() + 1e-9)
+
+        if self.debug and idx < 3:
+            print(
+                f"[DEBUG] idx={idx} | shape={waveform.shape} | label={label}"
+            )
+
+        return waveform, label
