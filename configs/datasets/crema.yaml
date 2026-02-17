@@ -1,0 +1,65 @@
+dataset:
+  name: CREMA-D
+  title: Crowd-Sourced Emotional Multimodal Actors Dataset
+  task: emotion_recognition
+  modality: audio
+  description: >
+    CREMA-D is a real-world emotional speech dataset composed of recordings
+    from professional actors expressing different emotions. The dataset is
+    commonly used for speech emotion recognition tasks.
+
+  classes:
+    - name: angry
+      code: ANG
+      label: 0
+    - name: disgust
+      code: DIS
+      label: 1
+    - name: fearful
+      code: FEA
+      label: 2
+    - name: happy
+      code: HAP
+      label: 3
+    - name: neutral
+      code: NEU
+      label: 4
+    - name: sad
+      code: SAD
+      label: 5
+
+  num_classes: 6
+  total_samples: 7442
+
+  audio:
+    format: wav
+    sampling_rate: 16000
+    channels: 1
+    clip_duration_seconds: approx_1_to_3
+    preprocessing:
+      - convert_to_mono
+      - resample_if_needed
+      - fixed_length_padding_or_truncation
+      - mean_variance_normalization
+
+  dataset_structure:
+    directory: AudioWAV
+    filename_pattern: "<ActorID>_<SentenceID>_<EmotionCode>_<Intensity>.wav"
+
+  source:
+    platform: Kaggle
+    kaggle_dataset: ejlok1/cremad
+    original_website: https://github.com/CheyneyComputerScience/CREMA-D
+
+  intended_use:
+    - speech_emotion_recognition
+    - few_shot_learning
+    - audio_representation_learning
+    - benchmarking_speech_models
+
+  license: research_only
+
+  citation: |
+    Cao, H., Cooper, D. G., Keutmann, M. K., Gur, R. C., Nenkova, A., & Verma, R. (2014).
+    CREMA-D: Crowd-Sourced Emotional Multimodal Actors Dataset.
+    IEEE Transactions on Affective Computing.
