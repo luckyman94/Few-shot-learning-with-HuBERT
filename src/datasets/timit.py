@@ -9,7 +9,7 @@ import random
 class TimitDataset(Dataset):
     def __init__(
         self,
-        root_dir="TRAIN",
+        root_dir="data/TRAIN",
         sample_rate=16000,
         max_len=16000,
         max_files=None,
