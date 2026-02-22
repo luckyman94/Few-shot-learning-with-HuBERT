@@ -114,7 +114,6 @@ def benchmark_fewshot(
 @torch.no_grad()
 def benchmark_fewshot_training(
     dataset,
-    hubert,
     head,
     device,
     n_tasks: int = 100,
@@ -123,10 +122,10 @@ def benchmark_fewshot_training(
     n_query: int = 20,
 ):
     """
-    Few-shot benchmark using Prototypical Networks (dataset-based).
+    Few-shot benchmark using Prototypical Networks
+    (embedding-based, HuBERT already cached).
     """
 
-    hubert.eval()
     head.eval()
 
     accs = []
@@ -143,25 +142,21 @@ def benchmark_fewshot_training(
             device=device,
         )
 
-        # ---- Support embeddings
-        z_s = hubert(Xs).last_hidden_state.mean(dim=1)
-        z_s = head(z_s)
+        # ---- embeddings already cached
+        z_s = head(Xs.to(device))
+        z_q = head(Xq.to(device))
 
-        # ---- Query embeddings
-        z_q = hubert(Xq).last_hidden_state.mean(dim=1)
-        z_q = head(z_q)
-
-        # ---- Prototypes
+        # ---- prototypes
         classes = torch.unique(ys)
         prototypes = torch.stack([
             z_s[ys == c].mean(dim=0) for c in classes
         ])
 
-        # ---- Distances
+        # ---- distances
         dists = torch.cdist(z_q, prototypes)
         preds_idx = dists.argmin(dim=1)
 
-        # ---- Relabel targets
+        # ---- relabel targets (episode-wise)
         yq_ep = torch.zeros_like(yq)
         for i, c in enumerate(classes):
             yq_ep[yq == c] = i
@@ -182,6 +177,6 @@ def benchmark_fewshot_training(
         "f1_macro": f1_score(
             all_targets.numpy(),
             all_preds.numpy(),
-            average="macro"
+            average="macro",
         ),
     }
