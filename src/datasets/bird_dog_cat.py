@@ -6,6 +6,9 @@ import kagglehub
 
 
 class AnimalAudioDataset(Dataset):
+    """
+    PyTorch Dataset for the Cats vs Dogs vs Birds Audio Classification dataset.
+    """
     def __init__(self, root_dir="Animals", sample_rate=16000, max_len=16000):
         base_path = kagglehub.dataset_download(
             "warcoder/cats-vs-dogs-vs-birds-audio-classification"

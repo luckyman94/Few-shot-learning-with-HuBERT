@@ -7,6 +7,10 @@ def compute_prototypes(
     y_support: torch.Tensor,
     device=None,
 ):
+    """
+    Computes class prototypes as the mean embedding of support samples.
+    Returns prototype vectors and their corresponding class labels.
+    """
     
 
     model.eval()
@@ -42,6 +46,10 @@ def classify(
     proto_labels: torch.Tensor,
     device=None,
 ):
+    """
+    Classifies query samples by nearest prototype in embedding space.
+    Returns predicted class labels.
+    """
 
 
     model.eval()

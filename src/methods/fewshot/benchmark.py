@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from tqdm import trange
-from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
+from sklearn.metrics import confusion_matrix, f1_score
 
 from src.methods.fewshot.sampling import sample_task, sample_episode_from_dataset
 from src.methods.fewshot.prototypical import compute_prototypes, classify
@@ -17,6 +17,10 @@ def benchmark_fewshot(
     n_query: int = 20,
 ):
     
+    """
+    Evaluates a model in a few-shot setting using episodic sampling.
+    Returns accuracy, F1 score, confusion matrix and embeddings.
+    """
 
     accs = []
     all_preds = []
@@ -97,7 +101,10 @@ def benchmark_fewshot_training(
     k_shot: int = 1,
     n_query: int = 20,
 ):
-    
+    """
+    Evaluates a trained projection head using episodic prototypical classification.
+    Returns few-shot accuracy statistics on unseen classes.
+    """
 
     head.eval()
 
@@ -115,21 +122,17 @@ def benchmark_fewshot_training(
             device=device,
         )
 
-        # ---- embeddings already cached
         z_s = head(Xs.to(device))
         z_q = head(Xq.to(device))
 
-        # ---- prototypes
         classes = torch.unique(ys)
         prototypes = torch.stack([
             z_s[ys == c].mean(dim=0) for c in classes
         ])
 
-        # ---- distances
         dists = torch.cdist(z_q, prototypes)
         preds_idx = dists.argmin(dim=1)
 
-        # ---- relabel targets (episode-wise)
         yq_ep = torch.zeros_like(yq)
         for i, c in enumerate(classes):
             yq_ep[yq == c] = i

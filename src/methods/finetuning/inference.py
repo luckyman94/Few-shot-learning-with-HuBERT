@@ -1,8 +1,11 @@
 import torch
-from sklearn.metrics import confusion_matrix
 
 @torch.no_grad()
 def get_predictions(model, loader, device):
+    """
+    Computes model predictions and ground-truth labels over a dataloader.
+    Returns concatenated true labels and predicted labels.
+    """
     model.eval()
 
     all_preds = []

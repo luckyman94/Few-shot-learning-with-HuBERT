@@ -1,8 +1,6 @@
 import torch
-import random
-from collections import defaultdict
-import random
 import numpy as np
+import torch
 
 
 def sample_episode_from_dataset(
@@ -12,8 +10,11 @@ def sample_episode_from_dataset(
     n_query,
     device,
 ):
-    import numpy as np
-    import torch
+    """
+    Samples a few-shot episode from a dataset using class level sampling.
+    Returns support and query sets for episodic training or evaluation.
+    """
+    
 
     label_to_indices = {}
     for i in range(len(dataset)):
@@ -70,6 +71,10 @@ def sample_task(
     k_shot=1,
     n_query=20
 ):
+    """
+    Samples a few-shot task directly from tensors of features and labels.
+    Returns support and query tensors.
+    """
     classes = torch.unique(y)
     selected = classes[torch.randperm(len(classes))[:n_way]]
 

@@ -7,6 +7,9 @@ _DATASET_CLASSES = discover_datasets()
 
 
 def build_dataset(name):
+    """
+    Builds a dataset instance based on the given name.
+    """
     if name not in DATASET_REGISTRY:
         raise KeyError(f"Unknown dataset: {name}")
 

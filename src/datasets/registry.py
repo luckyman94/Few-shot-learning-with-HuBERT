@@ -1,3 +1,5 @@
+# Dataset registry mapping dataset names to their classes and parameters.
+
 DATASET_REGISTRY = {
     "animals": {
         "class": "AnimalAudioDataset",

@@ -12,6 +12,10 @@ def plot_tsne(
     title="t-SNE projection",
     figsize=(6, 6),
 ):
+    """
+    Projects embeddings to 2D using t-SNE and visualizes class separation.
+    Optionally displays class names in the legend.
+    """
     
 
     tsne = TSNE(

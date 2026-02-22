@@ -4,6 +4,10 @@ from torch.utils.data import Dataset
 
 
 class SyntheticAudioNoiseDataset(Dataset):
+    """
+    A synthetic dataset that generates noisy sine wave audio samples for multiple classes.
+    The level of noise can be controlled via the snr_db param.
+    """
     def __init__(
         self,
         n_classes=8,

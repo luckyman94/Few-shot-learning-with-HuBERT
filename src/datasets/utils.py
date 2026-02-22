@@ -5,6 +5,8 @@ from torch.utils.data import Dataset
 
 
 def discover_datasets(package="src.datasets"):
+    """
+    Dynamically retrieves all Dataset subclasses from the src/datasets package."""
 
     datasets = {}
 

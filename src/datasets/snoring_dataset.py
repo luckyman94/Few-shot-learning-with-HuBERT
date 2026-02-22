@@ -6,6 +6,9 @@ import kagglehub
 
 
 class SnoringDataset(Dataset):
+    """
+    PyTorch Dataset for the Snoring Dataset.
+    """
     def __init__(self, root_dir="Snoring Dataset", sample_rate=16000, max_len=16000):
         base_path = kagglehub.dataset_download(
             "tareqkhanemu/snoring"

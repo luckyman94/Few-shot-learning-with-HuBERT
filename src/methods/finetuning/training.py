@@ -2,6 +2,10 @@ from tqdm import tqdm
 import torch
 
 def train_epoch(model, loader, optimizer, criterion, device):
+    """
+    Runs one training epoch over a dataloader and updates model parameters.
+    Returns average loss and accuracy for the epoch.
+    """
     model.train()
 
     total_loss = 0.0
@@ -38,6 +42,10 @@ def train_epoch(model, loader, optimizer, criterion, device):
 
 @torch.no_grad()
 def eval_epoch(model, loader,device,split="Val"):
+    """
+    Evaluates a model on a dataloader.
+    Returns classification accuracy.
+    """
     model.eval()
 
     correct = 0
@@ -72,6 +80,10 @@ def train_model(
     ckpt_path="best_lora_model.pt",
     patience_ratio=0.05,
 ):
+    """
+    Trains a model for multiple epochs with validation.
+    Returns training history).
+    """
     
     best_val_acc = 0.0
 

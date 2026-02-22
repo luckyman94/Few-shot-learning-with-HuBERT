@@ -19,6 +19,10 @@ def prototypical_train(
     n_episodes,
     episodes_per_batch=8,
 ):
+    """
+    Trains a projection head using episodic Prototypical Networks.
+    Returns mean and sstd of the training loss.
+    """
     head.train()
 
     optimizer.zero_grad()
@@ -26,7 +30,6 @@ def prototypical_train(
 
     for episode in trange(n_episodes, desc="Prototypical training (batched)"):
 
-        # -------- sample one episode
         Xs, ys, Xq, yq = sample_episode_from_dataset(
             dataset,
             n_way=n_way,
@@ -35,18 +38,14 @@ def prototypical_train(
             device=device,
         )
 
-        # -------- embeddings
-        # APRÈS (cache)
         z_s = head(Xs.to(device))
         z_q = head(Xq.to(device))
 
-        # -------- prototypes
         classes = torch.unique(ys)
         prototypes = torch.stack([
             z_s[ys == c].mean(dim=0) for c in classes
         ])
 
-        # -------- distances & loss
         dists = torch.cdist(z_q, prototypes)
         logits = -dists
 
@@ -55,17 +54,15 @@ def prototypical_train(
             yq_ep[yq == c] = i
 
         loss = torch.nn.functional.cross_entropy(logits, yq_ep)
-        loss = loss / episodes_per_batch   # 🔑 IMPORTANT
+        loss = loss / episodes_per_batch   
         loss.backward()
 
         losses.append(loss.item())
 
-        # -------- optimizer step
         if (episode + 1) % episodes_per_batch == 0:
             optimizer.step()
             optimizer.zero_grad()
 
-    # dernier step si besoin
     optimizer.step()
     optimizer.zero_grad()
 
@@ -85,6 +82,10 @@ def build_embedding_cache(
     device,
     batch_size=16,
 ):
+    """
+    Computes and caches frozen HuBERT embeddings for an entire dataset (reduce memory).
+    Returns tensors of embeddings and corresponding labels.
+    """
     hubert.eval()
 
     loader = DataLoader(
@@ -108,16 +109,20 @@ def build_embedding_cache(
         all_labels.append(y)
 
     return (
-        torch.cat(all_embeddings),   # [N, D]
-        torch.cat(all_labels),       # [N]
+        torch.cat(all_embeddings),   
+        torch.cat(all_labels),       
     )
 
 
 class EmbeddingDataset(Dataset):
+    """
+    Dataset wrapper for precomputed embeddings and labels.
+    Used for episodic few-shot training and evaluation.
+    """
     def __init__(self, embeddings, labels, classes):
         self.embeddings = embeddings
         self.labels = labels
-        self.classes = classes  # indices de classes visibles
+        self.classes = classes  
 
     def __len__(self):
         return len(self.labels)

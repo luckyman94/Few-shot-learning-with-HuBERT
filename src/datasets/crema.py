@@ -6,6 +6,9 @@ import kagglehub
 
 
 class CremaDDataset(Dataset):
+    """
+    PyTorch Dataset for the CREMA-D dataset.
+    """
     def __init__(self, root_dir="", sample_rate=16000, max_len=24000):
         base_path = kagglehub.dataset_download("ejlok1/cremad")
         self.root_dir = os.path.join(base_path, "AudioWAV")
