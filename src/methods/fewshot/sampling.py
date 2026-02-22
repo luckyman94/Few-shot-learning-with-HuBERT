@@ -12,30 +12,44 @@ def sample_episode_from_dataset(
     n_query,
     device,
 ):
-    """
-    Sample one few-shot episode from a PyTorch Dataset.
-    Dataset must return (waveform, label).
-    """
+    import numpy as np
+    import torch
 
-    # collect indices per class
+    # 1. construire label → indices
     label_to_indices = {}
-    for idx in range(len(dataset)):
-        _, label = dataset[idx]
-        label_to_indices.setdefault(label, []).append(idx)
+    for i in range(len(dataset)):
+        _, label = dataset[i]
+        label = int(label)
+        label_to_indices.setdefault(label, []).append(i)
 
-    classes = list(label_to_indices.keys())
-    selected_classes = np.random.choice(classes, n_way, replace=False)
+    # 2. classes réellement disponibles
+    available_classes = list(label_to_indices.keys())
 
-    Xs, ys = [], []
-    Xq, yq = [], []
+    # 3. filtrer celles avec assez d'exemples
+    valid_classes = [
+        c for c in available_classes
+        if len(label_to_indices[c]) >= k_shot + n_query
+    ]
+
+    if len(valid_classes) < n_way:
+        raise ValueError(
+            f"Not enough valid classes ({len(valid_classes)}) "
+            f"for n_way={n_way}, k_shot={k_shot}, n_query={n_query}"
+        )
+
+    # 4. sample des VRAIES classes
+    selected_classes = np.random.choice(
+        valid_classes, n_way, replace=False
+    )
+
+    Xs, ys, Xq, yq = [], [], [], []
 
     for c in selected_classes:
         indices = label_to_indices[c]
-        assert len(indices) >= k_shot + n_query
-
         perm = np.random.permutation(indices)
+
         support_idx = perm[:k_shot]
-        query_idx = perm[k_shot : k_shot + n_query]
+        query_idx   = perm[k_shot:k_shot + n_query]
 
         for i in support_idx:
             x, _ = dataset[i]
@@ -47,12 +61,12 @@ def sample_episode_from_dataset(
             Xq.append(x)
             yq.append(c)
 
-    Xs = torch.stack(Xs).to(device)
-    ys = torch.tensor(ys).to(device)
-    Xq = torch.stack(Xq).to(device)
-    yq = torch.tensor(yq).to(device)
-
-    return Xs, ys, Xq, yq
+    return (
+        torch.stack(Xs).to(device),
+        torch.tensor(ys, dtype=torch.long).to(device),
+        torch.stack(Xq).to(device),
+        torch.tensor(yq, dtype=torch.long).to(device),
+    )
 
 
 def sample_task(
