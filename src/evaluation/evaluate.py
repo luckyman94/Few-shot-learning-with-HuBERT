@@ -15,9 +15,6 @@ def evaluate_and_plot(
     tsne_title="t-SNE of query embeddings",
 ):
 
-    """
-    Evaluate and plot results from benchmark_fewshot.
-    """
 
     y_true = results["all_targets"].numpy()
     y_pred = results["all_preds"].numpy()

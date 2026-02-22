@@ -7,9 +7,6 @@ _DATASET_CLASSES = discover_datasets()
 
 
 def build_dataset(name):
-    """
-    Instantiate a dataset from the registry.
-    """
     if name not in DATASET_REGISTRY:
         raise KeyError(f"Unknown dataset: {name}")
 

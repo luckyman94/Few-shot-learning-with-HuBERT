@@ -27,6 +27,7 @@ def split_dataset_by_classes(dataset, train_ratio=0.7, seed=42):
 
     rng = np.random.RandomState(seed)
 
+    # classes = numerical indices
     classes = list(range(len(dataset.classes)))
     rng.shuffle(classes)
 
