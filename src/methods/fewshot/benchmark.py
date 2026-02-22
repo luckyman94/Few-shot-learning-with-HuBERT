@@ -107,3 +107,86 @@ def benchmark_fewshot(
         "all_embeddings": all_embeddings, 
         "classes": classes,
     }
+
+import torch
+import numpy as np
+from tqdm import trange
+from sklearn.metrics import confusion_matrix, f1_score
+
+from src.methods.fewshot.sampling import sample_episode_from_dataset
+
+
+@torch.no_grad()
+def benchmark_fewshot_training(
+    dataset,
+    hubert,
+    head,
+    device,
+    n_tasks: int = 100,
+    n_way: int = None,
+    k_shot: int = 1,
+    n_query: int = 20,
+):
+    """
+    Few-shot benchmark using Prototypical Networks (dataset-based).
+    """
+
+    hubert.eval()
+    head.eval()
+
+    accs = []
+    all_preds = []
+    all_targets = []
+
+    for _ in trange(n_tasks, desc=f"{k_shot}-shot benchmark"):
+
+        Xs, ys, Xq, yq = sample_episode_from_dataset(
+            dataset,
+            n_way=n_way or len(dataset.classes),
+            k_shot=k_shot,
+            n_query=n_query,
+            device=device,
+        )
+
+        # ---- Support embeddings
+        z_s = hubert(Xs).last_hidden_state.mean(dim=1)
+        z_s = head(z_s)
+
+        # ---- Query embeddings
+        z_q = hubert(Xq).last_hidden_state.mean(dim=1)
+        z_q = head(z_q)
+
+        # ---- Prototypes
+        classes = torch.unique(ys)
+        prototypes = torch.stack([
+            z_s[ys == c].mean(dim=0) for c in classes
+        ])
+
+        # ---- Distances
+        dists = torch.cdist(z_q, prototypes)
+        preds_idx = dists.argmin(dim=1)
+
+        # ---- Relabel targets
+        yq_ep = torch.zeros_like(yq)
+        for i, c in enumerate(classes):
+            yq_ep[yq == c] = i
+
+        preds = preds_idx.cpu()
+        targets = yq_ep.cpu()
+
+        accs.append((preds == targets).float().mean().item())
+        all_preds.append(preds)
+        all_targets.append(targets)
+
+    all_preds = torch.cat(all_preds)
+    all_targets = torch.cat(all_targets)
+
+    return {
+        "accuracy_mean": float(np.mean(accs)),
+        "accuracy_std": float(np.std(accs)),
+        "f1_macro": f1_score(
+            all_targets.numpy(),
+            all_preds.numpy(),
+            average="macro"
+        ),
+    }
