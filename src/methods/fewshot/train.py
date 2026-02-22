@@ -8,7 +8,7 @@ from tqdm import tqdm
 from torch.utils.data import Dataset
 
 
-def prototypical_train_batched(
+def prototypical_train(
     dataset,
     hubert,
     head,
@@ -38,11 +38,9 @@ def prototypical_train_batched(
         )
 
         # -------- embeddings
-        z_s = hubert(Xs).last_hidden_state.mean(dim=1)
-        z_s = head(z_s)
-
-        z_q = hubert(Xq).last_hidden_state.mean(dim=1)
-        z_q = head(z_q)
+        # APRÈS (cache)
+        z_s = head(Xs.to(device))
+        z_q = head(Xq.to(device))
 
         # -------- prototypes
         classes = torch.unique(ys)
