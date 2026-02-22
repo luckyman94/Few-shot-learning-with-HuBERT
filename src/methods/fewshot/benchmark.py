@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import trange
 from sklearn.metrics import confusion_matrix, accuracy_score, f1_score
 
-from src.methods.fewshot.sampling import sample_task
+from src.methods.fewshot.sampling import sample_task, sample_episode_from_dataset
 from src.methods.fewshot.prototypical import compute_prototypes, classify
 
 
@@ -108,12 +108,7 @@ def benchmark_fewshot(
         "classes": classes,
     }
 
-import torch
-import numpy as np
-from tqdm import trange
-from sklearn.metrics import confusion_matrix, f1_score
 
-from src.methods.fewshot.sampling import sample_episode_from_dataset
 
 
 @torch.no_grad()

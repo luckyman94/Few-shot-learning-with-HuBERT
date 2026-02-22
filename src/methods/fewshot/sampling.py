@@ -2,6 +2,57 @@ import torch
 import random
 from collections import defaultdict
 import random
+import numpy as np
+
+
+def sample_episode_from_dataset(
+    dataset,
+    n_way,
+    k_shot,
+    n_query,
+    device,
+):
+    """
+    Sample one few-shot episode from a PyTorch Dataset.
+    Dataset must return (waveform, label).
+    """
+
+    # collect indices per class
+    label_to_indices = {}
+    for idx in range(len(dataset)):
+        _, label = dataset[idx]
+        label_to_indices.setdefault(label, []).append(idx)
+
+    classes = list(label_to_indices.keys())
+    selected_classes = np.random.choice(classes, n_way, replace=False)
+
+    Xs, ys = [], []
+    Xq, yq = [], []
+
+    for c in selected_classes:
+        indices = label_to_indices[c]
+        assert len(indices) >= k_shot + n_query
+
+        perm = np.random.permutation(indices)
+        support_idx = perm[:k_shot]
+        query_idx = perm[k_shot : k_shot + n_query]
+
+        for i in support_idx:
+            x, _ = dataset[i]
+            Xs.append(x)
+            ys.append(c)
+
+        for i in query_idx:
+            x, _ = dataset[i]
+            Xq.append(x)
+            yq.append(c)
+
+    Xs = torch.stack(Xs).to(device)
+    ys = torch.tensor(ys).to(device)
+    Xq = torch.stack(Xq).to(device)
+    yq = torch.tensor(yq).to(device)
+
+    return Xs, ys, Xq, yq
 
 
 def sample_task(
