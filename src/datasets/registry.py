@@ -1,5 +1,3 @@
-# src/datasets/registry.py
-
 DATASET_REGISTRY = {
     "animals": {
         "class": "AnimalAudioDataset",
