@@ -6,7 +6,7 @@ import kagglehub
 
 
 class UrbanDataset(Dataset):
-    def __init__(self, root_dir, sample_rate=16000, max_len=16000):
+    def __init__(self, root_dir="", sample_rate=16000, max_len=16000):
         self.base_path = kagglehub.dataset_download("chrisfilo/urbansound8k")
         self.root_dir = os.path.join(self.base_path, root_dir)
         self.sample_rate = sample_rate
