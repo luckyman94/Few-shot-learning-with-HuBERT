@@ -14,6 +14,8 @@ def evaluate_and_plot(
     max_tsne_points=2000,
     tsne_title="t-SNE of query embeddings",
 ):
+    
+    """Evaluates classification metrics and plots confusion matrix and t-SNE visualization."""
 
 
     y_true = results["all_targets"].numpy()

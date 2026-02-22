@@ -7,6 +7,9 @@ import kagglehub
 
 
 class TimitDataset(Dataset):
+    """
+    PyTorch Dataset for the TIMIT dataset.
+    """
     def __init__(
         self,
         root_dir="data/TRAIN",

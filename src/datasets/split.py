@@ -2,6 +2,9 @@ from torch.utils.data import Dataset
 import numpy as np
 
 class ClassSubsetDataset(Dataset):
+    """
+    A Dataset wrapper that filters samples to only include specified classes.
+    """
     def __init__(self, dataset, allowed_classes):
         self.dataset = dataset
         self.allowed_classes = set(allowed_classes)
@@ -23,7 +26,9 @@ class ClassSubsetDataset(Dataset):
 
 
 def split_dataset_by_classes(dataset, train_ratio=0.7, seed=42):
-    import numpy as np
+    """
+    Splits a dataset into train and test subsets based on class labels.
+    """
 
     rng = np.random.RandomState(seed)
 

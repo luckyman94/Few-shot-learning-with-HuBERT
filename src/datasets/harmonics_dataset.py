@@ -4,6 +4,10 @@ from torch.utils.data import Dataset
 
 
 class SyntheticAudioHarmonicsDataset(Dataset):
+    """
+    A synthetic dataset that generates audio samples with varying numbers of harmonics.
+    The number of harmonics can be controlled via the max_harmonics param.
+    """
     def __init__(
         self,
         n_classes=8,

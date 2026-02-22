@@ -10,6 +10,10 @@ def plot_confusion_matrix(
     class_names=None,
     title="Normalized confusion matrix",
 ):
+    """
+    Plots a normalized confusion matrix using seaborn heatmap.
+    Optionally displays class names on axes.
+    """
     cm = confusion_matrix(y_true, y_pred)
     cm = cm.astype(float) / cm.sum(axis=1, keepdims=True)
 

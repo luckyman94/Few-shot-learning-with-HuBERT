@@ -7,6 +7,9 @@ import kagglehub
 
 
 class SpeechCommandsDataset(Dataset):
+    """
+    PyTorch Dataset for the Speech Commands dataset.
+    """
     def __init__(
         self,
         root_dir="speech_commands",
