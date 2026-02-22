@@ -12,10 +12,7 @@ DATASET_REGISTRY = {
 
     "speech_commands": {
         "class": "SpeechCommandsDataset",
-        "params": {
-            "total_samples": 1000,
-        },
-        "n_way": 10,
+        "params": {}
     },
 
     "synthetic_noise_low": {
