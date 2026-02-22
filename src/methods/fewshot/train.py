@@ -10,7 +10,6 @@ from torch.utils.data import Dataset
 
 def prototypical_train(
     dataset,
-    hubert,
     head,
     optimizer,
     device,
@@ -20,7 +19,6 @@ def prototypical_train(
     n_episodes,
     episodes_per_batch=8,
 ):
-    hubert.eval()
     head.train()
 
     optimizer.zero_grad()
