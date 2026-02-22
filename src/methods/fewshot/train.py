@@ -4,6 +4,8 @@ from torch.utils.data import DataLoader
 from tqdm import trange
 import numpy as np
 from src.methods.fewshot.sampling import sample_episode_from_dataset
+from tqdm import tqdm
+from torch.utils.data import Dataset
 
 
 def prototypical_train_batched(
@@ -75,3 +77,54 @@ def prototypical_train_batched(
         "train_loss_mean": float(np.mean(losses)),
         "train_loss_std": float(np.std(losses)),
     }
+
+
+
+
+
+@torch.no_grad()
+def build_embedding_cache(
+    dataset,
+    hubert,
+    device,
+    batch_size=16,
+):
+    hubert.eval()
+
+    loader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=2,
+        pin_memory=True,
+    )
+
+    all_embeddings = []
+    all_labels = []
+
+    for x, y in tqdm(loader, desc="Caching HuBERT embeddings"):
+        x = x.to(device)
+
+        out = hubert(x)
+        z = out.last_hidden_state.mean(dim=1)
+
+        all_embeddings.append(z.cpu())
+        all_labels.append(y)
+
+    return (
+        torch.cat(all_embeddings),   # [N, D]
+        torch.cat(all_labels),       # [N]
+    )
+
+
+class EmbeddingDataset(Dataset):
+    def __init__(self, embeddings, labels, classes):
+        self.embeddings = embeddings
+        self.labels = labels
+        self.classes = classes  # indices de classes visibles
+
+    def __len__(self):
+        return len(self.labels)
+
+    def __getitem__(self, idx):
+        return self.embeddings[idx], self.labels[idx]
