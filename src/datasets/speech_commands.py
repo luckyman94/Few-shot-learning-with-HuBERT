@@ -15,11 +15,6 @@ class SpeechCommandsDataset(Dataset):
         total_samples=1000,   
         seed=42,
     ):
-        """
-        Balanced Speech Commands dataset (from Kaggle).
-
-        total_samples is split evenly across classes.
-        """
 
         random.seed(seed)
 

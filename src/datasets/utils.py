@@ -5,16 +5,11 @@ from torch.utils.data import Dataset
 
 
 def discover_datasets(package="src.datasets"):
-    """
-    Discover Dataset classes inside src/datasets.
-    Works with namespace packages, notebooks, and scripts.
-    """
 
     datasets = {}
 
     pkg = importlib.import_module(package)
 
-    # 🔑 namespace package → __path__ (liste de dossiers)
     dataset_dir = list(pkg.__path__)[0]
 
     for file in os.listdir(dataset_dir):

@@ -16,31 +16,7 @@ def benchmark_fewshot(
     k_shot: int = 1,
     n_query: int = 20,
 ):
-    """
-    Few-shot benchmark using Prototypical Networks .
-
-    Parameters
-    ----------
-    model : torch.nn.Module
-        Feature extractor (HuBERT)
-    X : torch.Tensor
-        All samples [N, ...]
-    y : torch.Tensor
-        Labels [N]
-    device : torch.device
-    n_tasks : int
-        Number of few-shot episodes
-    k_shot : int
-        Number of support samples per class
-    n_query : int
-        Number of query samples per class
-
-    Returns
-    -------
-    results : dict
-        accuracy_mean, accuracy_std, f1_macro, confusion_matrix,
-        all_preds, all_targets
-    """
+    
 
     accs = []
     all_preds = []
@@ -121,10 +97,7 @@ def benchmark_fewshot_training(
     k_shot: int = 1,
     n_query: int = 20,
 ):
-    """
-    Few-shot benchmark using Prototypical Networks
-    (embedding-based, HuBERT already cached).
-    """
+    
 
     head.eval()
 
