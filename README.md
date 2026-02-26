@@ -30,6 +30,15 @@ To speed up training and evaluation, HuBERT embeddings are precomputed and cache
 
 The project is organized into modular components to separate datasets, methods, evaluation utilities and experimental notebooks. A README.md is available in each folder to describe it.
 
+## Installation
+
+### Clone the repository
+
+```bash
+git clone https://github.com/luckyman94/Few-shot-learning-with-HuBERT.git
+cd Few-shot-learning-with-HuBERT
+```
+
 ## Datasets
 
 The project includes a variety of real-world and synthetic audio datasets to evaluate few-shot learning across different audio domains.
